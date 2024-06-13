@@ -1,0 +1,30 @@
+<!-- templates/inventory/item_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Item List{% endblock %}
+
+{% block content %}
+<h1>Inventory Items</h1>
+<a href="{% url 'item_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Item</a>
+<table>
+    <tr>
+        <th>Description</th>
+        <th>Category</th>
+        <th>Unit of Measurement</th>
+        <th>Current Unit Price</th>
+        <th>Stock Balance</th>
+        <th>Minimum Stock</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+        <td>{{ item.description }}</td>
+        <td>{{ item.category }}</td>
+        <td>{{ item.unit_of_measurement }}</td>
+        <td>{{ item.current_unit_price }}</td>
+        <td>{{ item.stock_balance }}</td>
+        <td>{{ item.minimum_stock }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+

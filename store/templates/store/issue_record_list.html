@@ -1,0 +1,24 @@
+<!-- templates/inventory/issue_record_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Issue Records{% endblock %}
+
+{% block content %}
+<h1>Issue Records</h1>
+<a href="{% url 'issue_record_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Issue</a>
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Department</th>
+        <th>Issued By</th>
+    </tr>
+    {% for record in issue_records %}
+    <tr>
+        <td><a href="{% url 'issue_record_detail' record.pk %}">{{ record.date }}</a></td>
+        <td>{{ record.department }}</td>
+        <td>{{ record.issued_by }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+
