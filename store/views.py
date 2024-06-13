@@ -36,19 +36,24 @@ def purchase_record_detail(request, pk):
     purchase_record_items = PurchaseRecordItem.objects.filter(purchase_record=purchase_record)
     return render(request, 'store/purchase_record_detail.html', {'purchase_record': purchase_record, 'purchase_record_items': purchase_record_items})
 
+
 def purchase_record_create(request):
     if request.method == 'POST':
         form = PurchaseRecordForm(request.POST, request.FILES)
-        formset = PurchaseRecordItemFormSet(request.POST, instance=form.instance)
+        formset = PurchaseRecordItemFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
             purchase_record = form.save()
-            formset.instance = purchase_record
-            formset.save()
+            items = formset.save(commit=False)
+            for item in items:
+                item.purchase_record = purchase_record
+                item.save()
             return redirect('purchase_record_list')
     else:
         form = PurchaseRecordForm()
         formset = PurchaseRecordItemFormSet()
+
     return render(request, 'store/purchase_record_form.html', {'form': form, 'formset': formset})
+
 
 def issue_record_list(request):
     issue_records = IssueRecord.objects.all()
@@ -59,17 +64,20 @@ def issue_record_detail(request, pk):
     issue_record_items = IssueRecordItem.objects.filter(issue_record=issue_record)
     return render(request, 'store/issue_record_detail.html', {'issue_record': issue_record, 'issue_record_items': issue_record_items})
 
+
 def issue_record_create(request):
     if request.method == 'POST':
         form = IssueRecordForm(request.POST)
-        formset = IssueRecordItemFormSet(request.POST, instance=form.instance)
+        formset = IssueRecordItemFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
             issue_record = form.save()
-            formset.instance = issue_record
-            formset.save()
+            items = formset.save(commit=False)
+            for item in items:
+                item.issue_record = issue_record
+                item.save()
             return redirect('issue_record_list')
     else:
         form = IssueRecordForm()
         formset = IssueRecordItemFormSet()
-    return render(request, 'store/issue_record_form.html', {'form': form, 'formset': formset})
 
+    return render(request, 'store/issue_record_form.html', {'form': form, 'formset': formset})
