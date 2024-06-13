@@ -13,7 +13,7 @@
         <th>Unit of Measurement</th>
         <th>Current Unit Price</th>
         <th>Stock Balance</th>
-        <th>Minimum Stock</th>
+        <th>Action</th>
     </tr>
     {% for item in items %}
     <tr>
@@ -22,7 +22,10 @@
         <td>{{ item.unit_of_measurement }}</td>
         <td>{{ item.current_unit_price }}</td>
         <td>{{ item.stock_balance }}</td>
-        <td>{{ item.minimum_stock }}</td>
+        <td>
+            <a href="{% url 'item_edit' item.pk %}" class="btn btn-warning btn-sm" style="margin-right: 0.50em;">Edit</a>
+            <a href="{% url 'item_delete' item.pk %}" class="btn btn-danger btn-sm">Delete</a>
+        </td>
     </tr>
     {% endfor %}
 </table>

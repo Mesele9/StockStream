@@ -31,6 +31,12 @@ class PurchaseRecord(models.Model):
     
     def __str__(self):
         return f'Purchase Record {self.id} - {self.date}'
+    
+    def delete(self, using=None, keep_parents=False):
+        for item in self.items.all():
+            item.item.stock_balance -= item.quantity
+            item.item.save()
+        super().delete(using=using, keep_parents=keep_parents)
 
 class PurchaseRecordItem(models.Model):
     purchase_record = models.ForeignKey(PurchaseRecord, related_name='items', on_delete=models.CASCADE)
@@ -57,6 +63,12 @@ class IssueRecord(models.Model):
     
     def __str__(self):
         return f'Issue Record {self.id} - {self.date}'
+    
+    def delete(self, using=None, keep_parents=False):
+        for item in self.items.all():
+            item.item.stock_balance += item.quantity
+            item.item.save()
+        super().delete(using=using, keep_parents=keep_parents)
 
 class IssueRecordItem(models.Model):
     issue_record = models.ForeignKey(IssueRecord, related_name='items', on_delete=models.CASCADE)
