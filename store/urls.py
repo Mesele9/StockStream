@@ -10,6 +10,12 @@ urlpatterns = [
     path('items/new/', views.item_create, name='item_create'),
     path('items/<int:pk>/edit/', views.item_edit, name='item_edit'),
     path('items/<int:pk>/delete/', views.item_delete, name='item_delete'),
+
+    # Suppliers Record URLs
+    path('suppliers/', views.supplier_list, name='supplier_list'),
+    path('suppliers/new/', views.supplier_create, name='supplier_create'),
+    path('suppliers/<int:pk>/edit/', views.supplier_edit, name='supplier_edit'),
+    path('suppliers/<int:pk>/delete/', views.supplier_delete, name='supplier_delete'),
     
     # Purchase Record URLs
     path('purchase-records/', views.purchase_record_list, name='purchase_record_list'),

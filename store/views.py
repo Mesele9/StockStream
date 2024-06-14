@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import F
-from .models import Item, PurchaseRecord, PurchaseRecordItem, IssueRecord, IssueRecordItem
-from .forms import ItemForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet
+from .models import Item, PurchaseRecord, PurchaseRecordItem, IssueRecord, IssueRecordItem, Supplier
+from .forms import ItemForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet, SupplierForm
 
 
 def dashboard(request):
@@ -18,6 +18,38 @@ def dashboard(request):
     }
     
     return render(request, 'store/dashboard.html', context)
+
+def supplier_list(request):
+    suppliers = Supplier.objects.all()
+    return render(request, 'store/supplier_list.html', {'suppliers': suppliers})
+
+def supplier_create(request):
+    if request.method == 'POST':
+        form = SupplierForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('supplier_list')
+    else:
+        form = SupplierForm()
+    return render(request, 'store/supplier_form.html', {'form': form})
+
+def supplier_edit(request, pk):
+    supplier = get_object_or_404(Supplier, pk=pk)
+    if request.method == 'POST':
+        form = SupplierForm(request.POST, instance=supplier)
+        if form.is_valid():
+            form.save()
+            return redirect('supplier_list')
+    else:
+        form = SupplierForm(instance=supplier)
+    return render(request, 'store/supplier_form.html', {'form': form})
+
+def supplier_delete(request, pk):
+    supplier = get_object_or_404(Supplier, pk=pk)
+    if request.method == 'POST':
+        supplier.delete()
+        return redirect('supplier_list')
+    return render(request, 'store/supplier_confirm_delete.html', {'supplier': supplier})
 
 
 def item_list(request):

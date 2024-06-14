@@ -1,9 +1,14 @@
 from django import forms
-from .models import Item, PurchaseRecord, PurchaseRecordItem, IssueRecord, IssueRecordItem
+from .models import Supplier, Item, PurchaseRecord, PurchaseRecordItem, IssueRecord, IssueRecordItem
 from django.forms.models import inlineformset_factory
 
 class DateInput(forms.DateInput):
     input_type = 'date'
+
+class SupplierForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = ['name', 'contact_person', 'phone_number', 'address', 'tin_number']
 
 class ItemForm(forms.ModelForm):
     class Meta:
@@ -13,7 +18,7 @@ class ItemForm(forms.ModelForm):
 class PurchaseRecordForm(forms.ModelForm):
     class Meta:
         model = PurchaseRecord
-        fields = ['date', 'supplier', 'purchaser', 'upload_receipt']
+        fields = ['date', 'supplier', 'purchaser', 'voucher_number', 'upload_receipt']
         widgets = {
             'date': DateInput(),
         }
@@ -33,7 +38,7 @@ class PurchaseRecordItemForm(forms.ModelForm):
 class IssueRecordForm(forms.ModelForm):
     class Meta:
         model = IssueRecord
-        fields = ['date', 'department', 'issued_by', 'received_by']
+        fields = ['date', 'department', 'issued_by', 'received_by', 'voucher_number']
         widgets = {
             'date': DateInput(),
         }
