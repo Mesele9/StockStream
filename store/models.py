@@ -45,12 +45,30 @@ class PurchaseRecordItem(models.Model):
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     
-    def save(self, *args, **kwargs):
+    """ def save(self, *args, **kwargs):
         self.total_price = self.quantity * self.unit_price
         super().save(*args, **kwargs)
         self.item.current_unit_price = self.unit_price
         self.item.stock_balance += self.quantity
+        self.item.save() """
+    
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            old = PurchaseRecordItem.objects.get(pk=self.pk)
+            quantity_diff = self.quantity - old.quantity
+            self.item.stock_balance += quantity_diff
+        else:
+            self.item.stock_balance += self.quantity
+        
+        self.total_price = self.quantity * self.unit_price
+        self.item.current_unit_price = self.unit_price
         self.item.save()
+        super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        self.item.stock_balance -= self.quantity
+        self.item.save()
+        super().delete(*args, **kwargs)
     
     def __str__(self):
         return f'{self.quantity} x {self.item.description}'
@@ -78,11 +96,23 @@ class IssueRecordItem(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     
     def save(self, *args, **kwargs):
+        if self.pk is not None:
+            old = IssueRecordItem.objects.get(pk=self.pk)
+            quantity_diff = self.quantity - old.quantity
+            self.item.stock_balance -= quantity_diff
+        else:
+            self.item.stock_balance -= self.quantity
+        
         self.unit_price = self.item.current_unit_price
         self.total_price = self.quantity * self.unit_price
-        super().save(*args, **kwargs)
-        self.item.stock_balance -= self.quantity
+        #self.item.current_unit_price = self.unit_price
         self.item.save()
+        super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        self.item.stock_balance += self.quantity
+        self.item.save()
+        super().delete(*args, **kwargs)    
     
     def __str__(self):
         return f'{self.quantity} x {self.item.description}'
