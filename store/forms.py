@@ -60,3 +60,6 @@ IssueRecordItemFormSet = inlineformset_factory(
     IssueRecord, IssueRecordItem, form=IssueRecordItemForm, extra=1, can_delete=True
 )
 
+class ItemFilterForm(forms.Form):
+    description = forms.CharField(required=False, label='Description')
+    category = forms.ChoiceField(choices=[('', 'All Categories')] + list(Item.CATEGORY_CHOICES), required=False, label='Category')

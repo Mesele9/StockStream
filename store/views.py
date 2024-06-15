@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import F
 from .models import Item, PurchaseRecord, PurchaseRecordItem, IssueRecord, IssueRecordItem, Supplier
-from .forms import ItemForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet, SupplierForm
+from .forms import ItemForm, ItemFilterForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet, SupplierForm
 
 
 def dashboard(request):
@@ -53,8 +53,17 @@ def supplier_delete(request, pk):
 
 
 def item_list(request):
+    form = ItemFilterForm(request.GET or None)
     items = Item.objects.all()
-    return render(request, 'store/item_list.html', {'items': items})
+
+    if form.is_valid():
+        if form.cleaned_data['description']:
+            items = items.filter(description__icontains=form.cleaned_data['description'])
+        if form.cleaned_data['category']:
+            items = items.filter(category=form.cleaned_data['category'])
+
+    return render(request, 'store/item_list.html', {'items': items, 'form': form})
+
 
 def item_create(request):
     if request.method == 'POST':
