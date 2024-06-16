@@ -5,25 +5,34 @@
 
 {% block content %}
 <h1>Purchase Record Details</h1>
-<p>Date: {{ purchase_record.date }}</p>
-<p>Supplier: {{ purchase_record.supplier }}</p>
-<p>Purchaser: {{ purchase_record.purchaser }}</p>
-<h2>Items</h2>
-<table>
-    <tr>
-        <th>Description</th>
-        <th>Quantity</th>
-        <th>Unit Price</th>
-        <th>Total Price</th>
-    </tr>
-    {% for item in purchase_record_items %}
-    <tr>
-        <td>{{ item.item.description }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ item.unit_price }}</td>
-        <td>{{ item.total_price }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% endblock %}
+<p><strong>Date:</strong> {{ purchase_record.date }}</p>
+<p><strong>Voucher Number:</strong> {{ purchase_record.voucher_number }}</p>
+<p><strong>Supplier:</strong> {{ purchase_record.supplier }}</p>
+<p><strong>Purchaser:</strong> {{ purchase_record.purchaser }}</p>
+<p><strong>Total Amount:</strong> {{ purchase_record.total_value }}</p>
+<p><strong>Receipt:</strong> <a href="{{ purchase_record.upload_receipt.url }}" target="_blank">View Receipt</a></p>
 
+<h3>Items</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in purchase_record.items.all %}
+        <tr>
+            <td>{{ item.item.description }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.unit_price }}</td>
+            <td>{{ item.total_price }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'purchase_record_list' %}" class="btn btn-secondary">Back to List</a>
+{% endblock %}

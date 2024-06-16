@@ -32,6 +32,9 @@ urlpatterns = [
     path('issue/<int:pk>/edit/', views.issue_record_edit, name='issue_record_edit'),
     path('issue/<int:pk>/delete/', views.issue_record_delete, name='issue_record_delete'),
     
-    # Other URLs can be added here
+    # Report URL
+    path('generate-report/', views.generate_report, name='generate_report'),
+    path('purchase-report/', views.purchase_report, name='purchase_report'),
+    path('issue-report/', views.issue_report, name='issue_report'),
 ]
 

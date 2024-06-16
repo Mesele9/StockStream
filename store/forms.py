@@ -63,3 +63,64 @@ IssueRecordItemFormSet = inlineformset_factory(
 class ItemFilterForm(forms.Form):
     description = forms.CharField(required=False, label='Description')
     category = forms.ChoiceField(choices=[('', 'All Categories')] + list(Item.CATEGORY_CHOICES), required=False, label='Category')
+
+class PurchaseRecordFilterForm(forms.Form):
+    voucher_number = forms.CharField(required=False, label='Voucher Number')
+
+class IssueRecordFilterForm(forms.Form):
+    voucher_number = forms.CharField(required=False, label='Voucher Number')
+
+
+class ReportForm(forms.Form):
+    TRANSACTION_CHOICES = [
+        ('', 'All'),
+        ('purchase', 'Purchase'),
+        ('issue', 'Issue'),
+    ]
+
+    start_date = forms.DateField(label='Start Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(label='End Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    transaction_type = forms.ChoiceField(choices=TRANSACTION_CHOICES, label='Transaction Type', required=False)
+    department = forms.CharField(max_length=100, label='Department', required=False)
+    supplier = forms.CharField(max_length=255, label='Supplier', required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError("End date must be after start date.")
+
+        return cleaned_data
+
+class PurchaseReportForm(forms.Form):
+    start_date = forms.DateField(label='Start Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(label='End Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    purchaser = forms.CharField(max_length=100, label='Purchaser', required=False)
+    supplier = forms.CharField(max_length=255, label='Supplier', required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError("End date must be after start date.")
+
+        return cleaned_data
+
+class IssueReportForm(forms.Form):
+    start_date = forms.DateField(label='Start Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(label='End Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    department = forms.CharField(max_length=100, label='Department', required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError("End date must be after start date.")
+
+        return cleaned_data

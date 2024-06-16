@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import F
+from django.db.models import F, Sum, Q
 from .models import Item, PurchaseRecord, PurchaseRecordItem, IssueRecord, IssueRecordItem, Supplier
-from .forms import ItemForm, ItemFilterForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet, SupplierForm
+from .forms import IssueRecordFilterForm, IssueReportForm, ItemForm, ItemFilterForm, PurchaseRecordFilterForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet, PurchaseReportForm, ReportForm, SupplierForm
 
 
 def dashboard(request):
@@ -94,10 +94,18 @@ def item_delete(request, pk):
     return render(request, 'store/item_confirm_delete.html', {'item': item})
 
 
-
 def purchase_record_list(request):
+    form = PurchaseRecordFilterForm(request.GET or None)
     purchase_records = PurchaseRecord.objects.all()
-    return render(request, 'store/purchase_record_list.html', {'purchase_records': purchase_records})
+    for p in purchase_records:
+        print(p.total_value)
+
+    if form.is_valid():
+        if form.cleaned_data['voucher_number']:
+            purchase_records = purchase_records.filter(voucher_number__icontains=form.cleaned_data['voucher_number'])
+
+    return render(request, 'store/purchase_record_list.html', {'purchase_records': purchase_records, 'form': form})
+
 
 def purchase_record_detail(request, pk):
     purchase_record = get_object_or_404(PurchaseRecord, pk=pk)
@@ -147,8 +155,15 @@ def purchase_record_delete(request, pk):
 
 
 def issue_record_list(request):
+    form = IssueRecordFilterForm(request.GET or None)
     issue_records = IssueRecord.objects.all()
-    return render(request, 'store/issue_record_list.html', {'issue_records': issue_records})
+
+    if form.is_valid():
+        if form.cleaned_data['voucher_number']:
+            issue_records = issue_records.filter(voucher_number__icontains=form.cleaned_data['voucher_number'])
+
+    return render(request, 'store/issue_record_list.html', {'issue_records': issue_records, 'form': form})
+
 
 def issue_record_detail(request, pk):
     issue_record = get_object_or_404(IssueRecord, pk=pk)
@@ -195,3 +210,94 @@ def issue_record_delete(request, pk):
         issue_record.delete()
         return redirect('issue_record_list')
     return render(request, 'store/issue_record_confirm_delete.html', {'issue_record': issue_record})
+
+
+def generate_report(request):
+    form = ReportForm(request.GET or None)
+    report_data = []
+
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        transaction_type = form.cleaned_data['transaction_type']
+        department = form.cleaned_data['department']
+        supplier = form.cleaned_data['supplier']
+
+        # Prepare filters based on form input
+        filters = Q(date__gte=start_date, date__lte=end_date)
+
+        if transaction_type:
+            filters &= Q()  # Add filter for transaction type (purchase or issue)
+
+        if department:
+            filters &= Q()  # Add filter for department
+
+        if supplier:
+            filters &= Q()  # Add filter for supplier
+
+        # Query database based on filters
+        if transaction_type == 'purchase' or not transaction_type:
+            purchase_records = PurchaseRecord.objects.filter(filters).order_by('date')
+            report_data.extend(purchase_records)
+
+        if transaction_type == 'issue' or not transaction_type:
+            issue_records = IssueRecord.objects.filter(filters).order_by('date')
+            report_data.extend(issue_records)
+
+    context = {
+        'form': form,
+        'report_data': report_data,
+    }
+    for r in report_data:
+        print(r)
+
+    return render(request, 'store/report.html', context)
+
+def purchase_report(request):
+    form = PurchaseReportForm(request.GET or None)
+    report_data = []
+
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        purchaser = form.cleaned_data['purchaser']
+        supplier = form.cleaned_data['supplier']
+
+        filters = Q(date__gte=start_date, date__lte=end_date)
+        if purchaser:
+            filters &= Q(purchaser=purchaser)
+        if supplier:
+            filters &= Q(supplier__name=supplier)
+
+        purchase_records = PurchaseRecord.objects.filter(filters).order_by('date')
+        report_data.extend(purchase_records)
+
+    context = {
+        'form': form,
+        'report_data': report_data,
+    }
+
+    return render(request, 'store/purchase_report.html', context)
+
+def issue_report(request):
+    form = IssueReportForm(request.GET or None)
+    report_data = []
+
+    if form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        department = form.cleaned_data['department']
+
+        filters = Q(date__gte=start_date, date__lte=end_date)
+        if department:
+            filters &= Q(department=department)
+
+        issue_records = IssueRecord.objects.filter(filters).order_by('date')
+        report_data.extend(issue_records)
+
+    context = {
+        'form': form,
+        'report_data': report_data,
+    }
+
+    return render(request, 'store/issue_report.html', context)
