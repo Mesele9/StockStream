@@ -36,5 +36,8 @@ urlpatterns = [
     path('generate-report/', views.generate_report, name='generate_report'),
     path('purchase-report/', views.purchase_report, name='purchase_report'),
     path('issue-report/', views.issue_report, name='issue_report'),
+    path('purchase-items-report/', views.purchase_items_report, name='purchase_items_report'),
+    path('issue-items-report/', views.issue_items_report, name='issue_items_report'),
+    
 ]
 

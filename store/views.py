@@ -1,7 +1,8 @@
+from django.forms import DecimalField, FloatField
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import F, Sum, Q
+from django.db.models import F, Sum, Q, Avg
 from .models import Item, PurchaseRecord, PurchaseRecordItem, IssueRecord, IssueRecordItem, Supplier
-from .forms import IssueRecordFilterForm, IssueReportForm, ItemForm, ItemFilterForm, PurchaseRecordFilterForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet, PurchaseReportForm, ReportForm, SupplierForm
+from .forms import IssueRecordFilterForm, IssueReportForm, ItemForm, ItemFilterForm, ItemsIssuedReportForm, ItemsPurchasedReportForm, PurchaseRecordFilterForm, PurchaseRecordForm, PurchaseRecordItemFormSet, IssueRecordForm, IssueRecordItemFormSet, PurchaseReportForm, ReportForm, SupplierForm
 
 
 def dashboard(request):
@@ -301,3 +302,83 @@ def issue_report(request):
     }
 
     return render(request, 'store/issue_report.html', context)
+
+
+
+def purchase_items_report(request):
+    form = PurchaseReportForm(request.GET or None)
+    report_data = []
+
+    if request.method == 'GET' and form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        purchaser = form.cleaned_data['purchaser']
+        supplier = form.cleaned_data['supplier']
+
+        # Aggregate total quantities for each item
+        purchase_items = PurchaseRecordItem.objects.filter(purchase_record__date__range=(start_date, end_date))
+        if purchaser:
+            purchase_items = purchase_items.filter(purchase_record__purchaser=purchaser)
+        if supplier:
+            purchase_items = purchase_items.filter(purchase_record__supplier=supplier)
+
+        aggregated_data = purchase_items.values('item__description').annotate(
+            total_quantity=Sum('quantity'),
+            average_price=Avg('unit_price'),
+            total_value=Sum('quantity') * Avg('unit_price')
+        )
+
+        for item_data in aggregated_data:
+            
+            item_description = item_data['item__description']
+            total_quantity = item_data['total_quantity']
+            total_value = item_data['total_value']
+            report_data.append({
+                
+                'item_description': item_description,
+                'total_quantity': total_quantity,
+                'total_value': total_value
+            })
+
+    context = {
+        'form': form,
+        'report_data': report_data,
+    }
+    return render(request, 'store/purchase_items_report.html', context)
+
+
+def issue_items_report(request):
+    form = IssueReportForm(request.GET or None)
+    report_data = []
+
+    if request.method == 'GET' and form.is_valid():
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        department = form.cleaned_data['department']
+
+        # Aggregate total quantities for each item
+        issue_items = IssueRecordItem.objects.filter(issue_record__date__range=(start_date, end_date))
+        if department:
+            issue_items = issue_items.filter(issue_record__department=department)
+
+        aggregated_data = issue_items.values('item__description').annotate(
+            total_quantity=Sum('quantity'),
+            average_price=Avg('unit_price'),
+            total_value=Sum('quantity') * Avg('unit_price')
+        )
+
+        for item_data in aggregated_data:
+            item_description = item_data['item__description']
+            total_quantity = item_data['total_quantity']
+            total_value = item_data['total_value']
+            report_data.append({
+                'item_description': item_description,
+                'total_quantity': total_quantity,
+                'total_value': total_value
+            })
+
+    context = {
+        'form': form,
+        'report_data': report_data,
+    }
+    return render(request, 'store/issue_items_report.html', context)

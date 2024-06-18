@@ -124,3 +124,21 @@ class IssueReportForm(forms.Form):
             raise forms.ValidationError("End date must be after start date.")
 
         return cleaned_data
+
+
+class ItemsPurchasedReportForm(forms.Form):
+    start_date = forms.DateField(widget=forms.TextInput(attrs={'type': 'date'}), required=True)
+    end_date = forms.DateField(widget=forms.TextInput(attrs={'type': 'date'}), required=True)
+    purchaser = forms.CharField(label='Purchaser', max_length=100, required=False)
+    supplier = forms.ModelChoiceField(queryset=Supplier.objects.all(), required=False)
+
+
+class ItemsIssuedReportForm(forms.Form):
+    start_date = forms.DateField(label='Start Date')
+    end_date = forms.DateField(label='End Date')
+    department = forms.CharField(label='Department')
+
+class IssueItemReportForm(forms.Form):
+    start_date = forms.DateField(widget=forms.TextInput(attrs={'type': 'date'}), required=True)
+    end_date = forms.DateField(widget=forms.TextInput(attrs={'type': 'date'}), required=True)
+    department = forms.CharField(required=False)
